@@ -9,6 +9,7 @@ import supybot.ircutils as ircutils
 import asyncirc.plugins.addressed
 import threading, time, os
 import random
+import sys
 
 class State(IntEnum):
     Question = 0
@@ -44,11 +45,11 @@ class Quizbot(object):
                 self.points = json.load(fobj)
     
     def reply(self, *args):
-        msg = ircutils.mircColor("".join(args), 2)
+        msg = "".join(ircutils.mircColor(i, 2, 0) for i in args)
         self.bot.say(self.channel, msg)
     
     def topic(self, *args):
-        topic = ircutils.mircColor("".join(args), 2)
+        topic = "".join(ircutils.mircColor(i, 2, 0) for i in args)
         self.bot.writeln(f'TOPIC {self.channel} :{topic}')
     
     def random(self, r : int):
@@ -63,9 +64,9 @@ class Quizbot(object):
                 self.tips = 1
                 self.current_category = random.choice(list(self.questions.keys()))
                 self.current_question = random.choice(self.questions[self.current_category])[:]
-                text = f"Kategorie {self.current_category}: {self.current_question[0]}"
-                self.reply(text)
-                self.topic(text)
+                text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
+                self.reply(*text)
+                self.topic(*text)
                 try:
                     self.current_question[3] = len(self.current_question[2]) * 2
                 except IndexError:
@@ -74,14 +75,15 @@ class Quizbot(object):
                     self.current_question[3] = len(self.current_question[2]) * 2
                 
                 if not self.random(10):
-                    self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4))
+                    self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4, 1))
+                    self.current_question[3] *= 3
                 
                 self.mode = State.Tips
                 time.sleep(4)
                 continue
         
             elif self.mode == State.Tips:
-                self.reply("{}{}".format(self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)))
+                self.reply("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)))
                 self.tips += 1
                 if self.tips == len(self.current_question[2]):
                     self.mode = State.Answer
@@ -95,10 +97,10 @@ class Quizbot(object):
                     else:
                         self.points[self.winner] += self.current_question[3]
                     
-                    self.reply(f"{self.winner} hat die Antwort {self.current_question[2]} korrekt erraten, dafür gibt es {self.current_question[3]} Punkte!")
+                    self.reply(f"{self.winner} hat die Antwort", ircutils.mircColor(" " + self.current_question[2] + " ", 7, 1), "korrekt erraten, dafür gibt es", ircutils.mircColor(" " + str(self.current_question[3]) + " ", 4, 1), "Punkte!")
                 
                 else:
-                    self.reply(f"Keiner hat die Antwort {self.current_question[2]} korrekt erraten :(")
+                    self.reply(f"Keiner hat die Antwort", ircutils.mircColor(" " + self.current_question[2] + " ", 7, 1), "korrekt erraten :(")
                 
                 if self.current_question[1]:
                     self.reply("Zusatzinfo:")
@@ -110,6 +112,9 @@ class Quizbot(object):
                 with open("stats.json", "w") as fobj:
                     json.dump(self.points, fobj)
                 
+                self.reply(ircutils.mircColor("-------------", 7, 1))
+                self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
+                self.reply(ircutils.mircColor("-------------", 7, 1))
                 time.sleep(20)
 quiz = None
 
@@ -138,4 +143,7 @@ def on_message(message, user, target, text):
         quiz.winner = user.nick
         quiz.mode = State.Answer
 
+@bot.on("connection-lost")
+def on_disconnected(*args):
+    sys.exit(2)
 asyncio.get_event_loop().run_forever()
