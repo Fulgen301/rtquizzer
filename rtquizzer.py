@@ -9,9 +9,7 @@ import threading, time, os, re
 import random
 import sys
 
-###
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
-###
 
 class ircutils(object):
     def bold(s):
