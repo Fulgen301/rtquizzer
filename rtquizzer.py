@@ -275,5 +275,5 @@ def on_message(message, user, target, text):
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
-    time.sleep(10)
+    sys.exit(0)
 asyncio.get_event_loop().run_forever()
