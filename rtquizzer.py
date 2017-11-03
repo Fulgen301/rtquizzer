@@ -210,6 +210,17 @@ class Quizbot(object):
                 time.sleep(20)
 quiz = None
 
+def git():
+    cached = os.stat(__file__).st_mtime
+    while True:
+        os.system("git pull")
+        stamp = os.stat(__file__).st_mtime
+        if stamp != cached:
+            cached = stamp
+            print("Restarting")
+            sys.exit(0)
+        time.sleep(300)
+
 asyncirc.plugins.addressed.register_command_character("!")
 bot = irc.connect("irc.euirc.net", 6667, use_ssl=False)
 bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer").join([Quizbot.channel, "#atlantis"])
@@ -218,6 +229,9 @@ bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer").join([Quizbot.channel, "#
 def connected(par=None):
     global quiz
     quiz = Quizbot(bot)
+    threading.Thread(target=git, args=(), daemon=True).start()
+
+
 @bot.on("addressed")
 def on_addressed(message, user, target, text):
     global quiz
