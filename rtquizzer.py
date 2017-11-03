@@ -221,7 +221,7 @@ def git():
 
 asyncirc.plugins.addressed.register_command_character("!")
 bot = irc.connect("irc.euirc.net", 6667, use_ssl=False)
-bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer").join([Quizbot.channel, "#atlantis"])
+bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer", password="quizzer").join([Quizbot.channel, "#atlantis"])
 
 @bot.on("irc-001")
 def connected(par=None):
