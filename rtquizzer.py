@@ -203,9 +203,10 @@ class Quizbot(object):
                     json.dump(self.points, fobj)
                 
                 self.reply(ircutils.mircColor("-------------", 7, 1))
-                self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
-                self.reply(ircutils.mircColor("-------------", 7, 1))
-                time.sleep(20)
+                #self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
+                #self.reply(ircutils.mircColor("-------------", 7, 1))
+                #time.sleep(20)
+                time.sleep(5)
 quiz = None
 
 def git():
