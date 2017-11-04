@@ -228,6 +228,7 @@ def connected(par=None):
     global quiz
     quiz = Quizbot(bot)
     threading.Thread(target=git, args=(), daemon=True).start()
+    bot.writeln(f"MODE {bot.nick} +B")
 
 
 @bot.on("addressed")
