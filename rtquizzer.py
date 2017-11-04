@@ -135,7 +135,8 @@ class Quizbot(object):
                 self.counter = 0
                 self.current_category = random.choice(list(self.questions.keys()))
                 self.current_question = random.choice(self.questions[self.current_category])[:]
-                text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
+                #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
+                text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
                 self.reply(*text)
                 self.topic(*text)
                 try:
