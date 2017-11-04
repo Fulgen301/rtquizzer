@@ -160,7 +160,7 @@ class Quizbot(object):
                     time.sleep(5)
                     continue
                 
-                self.reply(ircutils.mircColor("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)), 0, 3))
+                self.reply(ircutils.mircColor("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)), 0, 10))
                 self.tips += 1
                 if self.tips == len(self.current_question[2]):
                     self.counter = 0
