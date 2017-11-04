@@ -216,7 +216,7 @@ def git():
         if stamp != cached:
             cached = stamp
             print("Restarting")
-            sys.exit(0)
+            os._exit(0)
         time.sleep(300)
 
 asyncirc.plugins.addressed.register_command_character("!")
