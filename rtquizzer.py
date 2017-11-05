@@ -134,21 +134,45 @@ class Quizbot(object):
                 self.tips = 1
                 self.counter = 0
                 self.current_category = random.choice(list(self.questions.keys()))
-                self.current_question = random.choice(self.questions[self.current_category])[:]
+                self.current_question = random.choice(self.questions[self.current_category])
                 #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
+                
                 try:
+                    if self.current_category.count(":") > 2:
+                        parts = self.current_category.split(":", 1)
+                        try:
+                            self.questions[self.current_category].remove(self.current_question)
+                        except (KeyError, ValueError):
+                            pass
+                        
+                        self.current_category = parts[0]
+                        self.current_question[0] = f"{parts[1]}{self.current_question[0]}"
+                        
+                        if self.current_category in self.questions:
+                            self.questions[self.current_category] = [self.current_question]
+                        else:
+                            self.questions[self.current_category].append(self.current_question)
+                    
                     text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
+                
+                
                 except IndexError:
                     text = [f"Kategorie {ircutils.bold(self.current_category)}: Frage '{self.current_question}' fehlerhaft."]
                     try:
                         self.questions[self.current_category].remove(self.current_question)
                     except ValueError:
                         text.append("\rKonnte Frage nicht aus der Datenbank tilgen.")
+                    except KeyError: # we change the question above
+                        pass
+                    
                     try:
                         with open("questions.pickle", "wb") as fobj:
                             pickle.dump(self.questions, fobj)
                     except Exception as e:
                         text.append("\rKonnte Datenbank nicht auf die Festplatte schreiben. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
+                
+                except RuntimeError: # general ignore
+                    pass
                 
                 self.reply(*text)
                 self.topic(*text)
