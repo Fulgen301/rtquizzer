@@ -3,7 +3,7 @@ import asyncio
 import re
 from asyncirc import irc
 from enum import IntEnum
-import json
+import pickle
 import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
@@ -105,14 +105,14 @@ class Quizbot(object):
         self.quiz.start()
     
     def loadQuestions(self):
-        with open("questions.json", "r") as fobj:
-            self.questions = json.load(fobj)
+        with open("questions.pickle", "r") as fobj:
+            self.questions = pickle.load(fobj)
             self.questions = {key : [[entry.strip() for entry in question if isinstance(entry, str)] for question in self.questions[key]] for key in self.questions}
     
     def loadStats(self):
-        if os.path.isfile("stats.json"):
-            with open("stats.json", "r") as fobj:
-                self.points = json.load(fobj)
+        if os.path.isfile("stats.pickle"):
+            with open("stats.pickle", "r") as fobj:
+                self.points = pickle.load(fobj)
     
     def reply(self, *args):
         msg = "".join(ircutils.mircColor(i, 2, 0) for i in args)
@@ -200,8 +200,8 @@ class Quizbot(object):
                 self.mode = State.Question
                 self.current_question = None
                 self.current_category = ""
-                with open("stats.json", "w") as fobj:
-                    json.dump(self.points, fobj)
+                with open("stats.pickle", "w") as fobj:
+                    pickle.dump(self.points, fobj)
                 
                 self.reply(ircutils.mircColor("-------------", 7, 1))
                 #self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
@@ -291,12 +291,12 @@ def on_message(message, user, target, text):
             
             current_question = []
             current_category = ""
-            with open("questions.json", "r") as fobj:
-                old = json.load(fobj)
+            with open("questions.pickle", "r") as fobj:
+                old = pickle.load(fobj)
             
             old.update(questions)
-            with open("questions.json", "w") as fobj:
-                json.dump(old, fobj)
+            with open("questions.pickle", "w") as fobj:
+                pickle.dump(old, fobj)
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
