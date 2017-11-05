@@ -136,7 +136,14 @@ class Quizbot(object):
                 self.current_category = random.choice(list(self.questions.keys()))
                 self.current_question = random.choice(self.questions[self.current_category])[:]
                 #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
-                text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
+                try:
+                    text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
+                except IndexError:
+                    text = [f"Kategorie {ircutils.bold(self.current_category)}: Frage '{self.current_question}' fehlerhaft."]
+                    try:
+                        self.questions[self.current_category].remove(self.current_question)
+                    except ValueError:
+                        text.append("Konnte Frage nicht aus der Datenbank tilgen.")
                 self.reply(*text)
                 self.topic(*text)
                 try:
