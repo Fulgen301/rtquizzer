@@ -105,13 +105,13 @@ class Quizbot(object):
         self.quiz.start()
     
     def loadQuestions(self):
-        with open("questions.pickle", "r") as fobj:
+        with open("questions.pickle", "rb") as fobj:
             self.questions = pickle.load(fobj)
             self.questions = {key : [[entry.strip() for entry in question if isinstance(entry, str)] for question in self.questions[key]] for key in self.questions}
     
     def loadStats(self):
         if os.path.isfile("stats.pickle"):
-            with open("stats.pickle", "r") as fobj:
+            with open("stats.pickle", "rb") as fobj:
                 self.points = pickle.load(fobj)
     
     def reply(self, *args):
@@ -200,7 +200,7 @@ class Quizbot(object):
                 self.mode = State.Question
                 self.current_question = None
                 self.current_category = ""
-                with open("stats.pickle", "w") as fobj:
+                with open("stats.pickle", "wb") as fobj:
                     pickle.dump(self.points, fobj)
                 
                 self.reply(ircutils.mircColor("-------------", 7, 1))
@@ -291,11 +291,11 @@ def on_message(message, user, target, text):
             
             current_question = []
             current_category = ""
-            with open("questions.pickle", "r") as fobj:
+            with open("questions.pickle", "rb") as fobj:
                 old = pickle.load(fobj)
             
             old.update(questions)
-            with open("questions.pickle", "w") as fobj:
+            with open("questions.pickle", "wb") as fobj:
                 pickle.dump(old, fobj)
 
 @bot.on("connection-lost")
