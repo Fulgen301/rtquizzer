@@ -250,6 +250,8 @@ def on_addressed(message, user, target, text):
         i = 0
         for key in quiz.questions:
             i += len(quiz.questions[key])
+        
+        quiz.reply(f"{i} Fragen")
 
 current_category = ""
 current_question = []
