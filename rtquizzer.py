@@ -284,19 +284,20 @@ def on_message(message, user, target, text):
         x = re.match(r".*-> (.*) <-.*", text)
         if x:
             current_question[2] = ircutils.stripColor(x[1])
-            if current_category not in questions:
-                questions[current_category] = [current_question[:]]
-            elif current_question not in questions[current_category]:
-                questions[current_category].append(current_question[:])
             
             current_question = []
             current_category = ""
             with open("questions.pickle", "rb") as fobj:
                 old = pickle.load(fobj)
             
-            old.update(questions)
+            questions.update(old)
+            if current_category not in questions:
+                questions[current_category] = [current_question[:]]
+            elif current_question not in questions[current_category]:
+                questions[current_category].append(current_question[:])
+            
             with open("questions.pickle", "wb") as fobj:
-                pickle.dump(old, fobj)
+                pickle.dump(questions, fobj)
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
