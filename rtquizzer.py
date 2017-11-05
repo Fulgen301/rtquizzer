@@ -143,7 +143,13 @@ class Quizbot(object):
                     try:
                         self.questions[self.current_category].remove(self.current_question)
                     except ValueError:
-                        text.append("Konnte Frage nicht aus der Datenbank tilgen.")
+                        text.append("\rKonnte Frage nicht aus der Datenbank tilgen.")
+                    try:
+                        with open("questions.pickle", "wb") as fobj:
+                            pickle.dump(self.questions, fobj)
+                    except Exception as e:
+                        text.append("\rKonnte Datenbank nicht auf die Festplatte schreiben. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
+                
                 self.reply(*text)
                 self.topic(*text)
                 try:
