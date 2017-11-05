@@ -235,6 +235,9 @@ def connected(par=None):
 
 @bot.on("addressed")
 def on_addressed(message, user, target, text):
+    if target != Quizbot.channel:
+        return
+    
     global quiz
     
     if text == "punkte" and quiz:
@@ -242,6 +245,11 @@ def on_addressed(message, user, target, text):
             quiz.reply(f"{i}.\t{p[0]} ({p[1]})")
             if i > 5:
                 break
+    
+    elif text == "anzahl" and quiz:
+        i = 0
+        for key in quiz.questions:
+            i += len(quiz.questions[key])
 
 current_category = ""
 current_question = []
