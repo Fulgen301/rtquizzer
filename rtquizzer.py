@@ -138,7 +138,7 @@ class Quizbot(object):
                 #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
                 
                 try:
-                    if self.current_category.count(":") > 2:
+                    if self.current_category.count(":") > 1:
                         parts = self.current_category.split(":", 1)
                         try:
                             self.questions[self.current_category].remove(self.current_question)
