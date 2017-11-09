@@ -169,7 +169,8 @@ class Quizbot(object):
                         with open("questions.pickle", "wb") as fobj:
                             pickle.dump(self.questions, fobj)
                     except Exception as e:
-                        text.append("Konnte Datenbank nicht auf die Festplatte schreiben. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
+                        text.append(f"Konnte Datenbank nicht auf die Festplatte schreiben: {str(e)}. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
+                        raise
                 
                 except Exception as e: # general ignore
                     b = f"Frage konnte nicht geladen werden: {str(e)}"
