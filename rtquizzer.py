@@ -87,6 +87,7 @@ class State(IntEnum):
 
 class Quizbot(object):
     quiz = None
+    test = None
     questions = {}
     current_question = []
     current_category = ""
@@ -103,6 +104,7 @@ class Quizbot(object):
         self.loadStats()
         self.quiz = threading.Thread(daemon=True, target=self.quizzing, args=())
         self.quiz.start()
+        self.test = threading.Thread(daemon=True, target=self.checkForQuiz, args=())
     
     def loadQuestions(self):
         with open("questions.pickle", "rb") as fobj:
@@ -125,8 +127,16 @@ class Quizbot(object):
     def random(self, r : int):
         return int(random.random() * r)
     
+    def checkForQuiz(self):
+        while True:
+            if not self.quiz.is_alive():
+                self.reply("Starte Quiz neu...")
+                del self.quiz
+                self.quiz = threading.Thread(daemon=True, target=self.quizzing, args=())
+                self.quiz.start()
+            time.sleep(60)
+    
     def quizzing(self):
-        print("quizzing()")
         while True:
             if self.mode == State.Question:
                 self.loadQuestions()
