@@ -146,62 +146,61 @@ class Quizbot(object):
                 #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
                 
                 try:
-                    self.current_category = random.choice(list(self.questions.keys()))
-                    self.current_question = random.choice(self.questions[self.current_category])
-                    if self.current_category.count(":") > 1:
-                        parts = self.current_category.split(":", 1)
+                    try:
+                        self.current_category = random.choice(list(self.questions.keys()))
+                        self.current_question = random.choice(self.questions[self.current_category])
+                        if self.current_category.count(":") > 1:
+                            parts = self.current_category.split(":", 1)
+                            try:
+                                self.questions[self.current_category].remove(self.current_question)
+                            except (KeyError, ValueError):
+                                pass
+                            
+                            self.current_category = parts[0]
+                            self.current_question[0] = f"{parts[1]}{self.current_question[0]}"
+                            
+                            if self.current_category in self.questions:
+                                self.questions[self.current_category] = [self.current_question]
+                            else:
+                                self.questions[self.current_category].append(self.current_question)
+                        
+                        text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
+                    
+                    
+                    except IndexError:
+                        text = [f"Kategorie {ircutils.bold(self.current_category)}: Frage '{self.current_question}' fehlerhaft."]
                         try:
                             self.questions[self.current_category].remove(self.current_question)
-                        except (KeyError, ValueError):
+                        except ValueError:
+                            text.append("Konnte Frage nicht aus der Datenbank tilgen.")
+                        except KeyError: # we change the question above
                             pass
                         
-                        self.current_category = parts[0]
-                        self.current_question[0] = f"{parts[1]}{self.current_question[0]}"
-                        
-                        if self.current_category in self.questions:
-                            self.questions[self.current_category] = [self.current_question]
-                        else:
-                            self.questions[self.current_category].append(self.current_question)
-                    
-                    text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
+                        try:
+                            with open("questions.pickle", "wb") as fobj:
+                                pickle.dump(self.questions, fobj)
+                        except Exception as e:
+                            text.append(f"Konnte Datenbank nicht auf die Festplatte schreiben: {str(e)}. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
+                            raise
                 
+                    self.reply(*text)
+                    self.topic(*text)
+                    try:
+                        self.current_question[3] = len(self.current_question[2]) * 2
+                    except IndexError:
+                        while len(self.current_question) < 4:
+                            self.current_question.append("")
+                        self.current_question[3] = len(self.current_question[2]) * 2
                 
-                except IndexError:
-                    text = [f"Kategorie {ircutils.bold(self.current_category)}: Frage '{self.current_question}' fehlerhaft."]
-                    try:
-                        self.questions[self.current_category].remove(self.current_question)
-                    except ValueError:
-                        text.append("Konnte Frage nicht aus der Datenbank tilgen.")
-                    except KeyError: # we change the question above
-                        pass
-                    
-                    try:
-                        with open("questions.pickle", "wb") as fobj:
-                            pickle.dump(self.questions, fobj)
-                    except Exception as e:
-                        text.append(f"Konnte Datenbank nicht auf die Festplatte schreiben: {str(e)}. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
-                        raise
+                    if not self.random(10):
+                        self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4, 1))
+                        self.current_question[3] *= 3
+                
+                    self.mode = State.Tips
                 
                 except Exception as e: # general ignore
-                    b = f"Frage konnte nicht geladen werden: {str(e)}"
-                    text = text.append(b) if text else [b]
-                    time.sleep(4)
-                    continue
+                    self.reply(f"Frage konnte nicht geladen werden: {str(e)}")
                 
-                self.reply(*text)
-                self.topic(*text)
-                try:
-                    self.current_question[3] = len(self.current_question[2]) * 2
-                except IndexError:
-                    while len(self.current_question) < 4:
-                        self.current_question.append("")
-                    self.current_question[3] = len(self.current_question[2]) * 2
-                
-                if not self.random(10):
-                    self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4, 1))
-                    self.current_question[3] *= 3
-                
-                self.mode = State.Tips
                 time.sleep(4)
                 continue
         
