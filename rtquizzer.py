@@ -324,6 +324,7 @@ def on_message(message, user, target, text):
             current_question = [ircutils.stripColor(x[2]), "", "", 0]
             current_category = ircutils.stripColor(x[1])
         
+        print(f"current_category: {current_category}, current_question: {current_question}")
         if not (current_category and current_question):
             return
         
