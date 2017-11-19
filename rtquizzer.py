@@ -336,8 +336,6 @@ def on_message(message, user, target, text):
         if x:
             current_question[2] = ircutils.stripColor(x[1])
             
-            current_question = []
-            current_category = ""
             with open("questions.pickle", "rb") as fobj:
                 old = pickle.load(fobj)
             
@@ -349,6 +347,9 @@ def on_message(message, user, target, text):
             
             with open("questions.pickle", "wb") as fobj:
                 pickle.dump(questions, fobj)
+            
+            current_question = []
+            current_category = ""
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
