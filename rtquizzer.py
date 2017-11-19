@@ -314,6 +314,7 @@ def on_message(message, user, target, text):
         quiz.mode = State.Answer
     
     elif target == "#atlantis" :
+        return
         if user.nick != "Colin":
             return
     
