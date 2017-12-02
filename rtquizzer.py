@@ -261,7 +261,7 @@ class Quizbot(object):
                 #time.sleep(20)
                 time.sleep(5)
     
-    def validQuestion(q : str) -> bool:
+    def validQuestion(self, q : str) -> bool:
         for i in ["Tipp", "Top 10"]:
             if i in q:
                 return False
