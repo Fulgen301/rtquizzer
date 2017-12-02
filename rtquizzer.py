@@ -164,6 +164,8 @@ class Quizbot(object):
                             else:
                                 self.questions[self.current_category].append(self.current_question)
                         
+                        if not self.validQuestion(self.current_category[0]):
+                            raise IndexError
                         text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
                     
                     
@@ -258,6 +260,12 @@ class Quizbot(object):
                 #self.reply(ircutils.mircColor("-------------", 7, 1))
                 #time.sleep(20)
                 time.sleep(5)
+    
+    def validQuestion(q : str) -> bool:
+        for i in ["Tipp", "Top 10"]:
+            if i in q:
+                return False
+        return True
 quiz = None
 
 def git():
@@ -314,14 +322,18 @@ def on_message(message, user, target, text):
         quiz.mode = State.Answer
     
     elif target == "#atlantis" :
-        if user.nick != "Colin":
+        if user.nick != "Colin" or not quiz:
             return
     
         global current_category, current_question, questions
         
         x = re.match(r"^(.*?): (.*\??)$", text) # regex by Chipakyu
-        if x and "Tipp" not in text:
+        if x and quiz:
             current_question = [ircutils.stripColor(x[2]), "", "", 0]
+            if not quiz.validQuestion(current_question[0]):
+                current_question = []
+                return
+            
             current_category = ircutils.stripColor(x[1])
         
         print(f"current_category: {current_category}, current_question: {current_question}")
