@@ -164,7 +164,7 @@ class Quizbot(object):
                             else:
                                 self.questions[self.current_category].append(self.current_question)
                         
-                        if not self.validQuestion(self.current_category[0]):
+                        if not (self.validQuestion(self.current_question[0]) and self.validQuestion(self.current_category)):
                             raise IndexError
                         text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
                     
