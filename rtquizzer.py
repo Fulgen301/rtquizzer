@@ -164,7 +164,7 @@ class Quizbot(object):
                             else:
                                 self.questions[self.current_category].append(self.current_question)
                         
-                        if not (self.validQuestion(self.current_question[0]) and self.validQuestion(self.current_category)):
+                        if not (self.validQuestion(self.current_question[0]) and self.validQuestion(self.current_category))ok:
                             raise IndexError
                         text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
                     
@@ -212,7 +212,8 @@ class Quizbot(object):
                     time.sleep(5)
                     continue
                 
-                self.reply(ircutils.mircColor("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)), 0, 10))
+                #self.reply(ircutils.mircColor("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)), 0, 10))
+                self.reply("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[:self.tips], "." * (len(self.current_question[2]) - self.tips)))
                 self.tips += 1
                 if self.tips >= len(self.current_question[2]):
                     self.counter = 0
