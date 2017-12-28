@@ -319,7 +319,7 @@ def on_addressed(message, user, target, text):
     if text in ["punkte", "tag"]:
         for i, p in enumerate(sorted((quiz.daily if text == "tag" else quiz.points).items(), key=lambda x: x[1], reverse=True), start=1):
             quiz.reply(f"{i}.\t{p[0]} ({p[1]})")
-            if i > 10:
+            if i >= 10:
                 break
     
     elif text == "anzahl":
