@@ -11,10 +11,6 @@ import sys
 import collections
 from datetime import date
 
-from PyQt5 import uic
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import *
-
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
 
 class ircutils(object):
