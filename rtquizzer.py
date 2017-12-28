@@ -8,6 +8,8 @@ import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
 import sys
+import collections
+from datetime import date
 
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
 
@@ -98,10 +100,12 @@ class Quizbot(object):
     bot = None
     channel = "#rt-quiz"
     counter = 0
+    last = None
     
     def __init__(self, bot):
         self.bot = bot
         self.loadStats()
+        self.last = date.today()
         self.quiz = threading.Thread(daemon=True, target=self.quizzing, args=())
         self.quiz.start()
         self.test = threading.Thread(daemon=True, target=self.checkForQuiz, args=())
@@ -112,9 +116,15 @@ class Quizbot(object):
             self.questions = {key : [[entry.strip() for entry in question if isinstance(entry, str)] for question in self.questions[key]] for key in self.questions}
     
     def loadStats(self):
+        self.points = collections.defaultdict(lambda: 0)
+        self.daily = collections.defaultdict(lambda: 0)
         if os.path.isfile("stats.pickle"):
             with open("stats.pickle", "rb") as fobj:
-                self.points = pickle.load(fobj)
+                self.points.update(pickle.load(fobj))
+        
+        if os.path.isfile("daily.pickle"):
+            with open("daily.pickle", "rb") as fobj:
+                self.daily.update(pickle.load(fobj))
     
     def reply(self, *args):
         msg = "".join(ircutils.mircColor(i, 2, 0) for i in args)
@@ -236,10 +246,11 @@ class Quizbot(object):
             
             elif self.mode == State.Answer:
                 if self.winner is not None:
-                    if self.winner not in self.points:
-                        self.points[self.winner] = self.current_question[3]
-                    else:
-                        self.points[self.winner] += self.current_question[3]
+                    x = re.match(r"(.*?).{1}onAir", self.winner, re.IGNORECASE)
+                    if x:
+                        self.winner = x[1]
+                    self.points[self.winner] += self.current_question[3]
+                    self.daily[self.winner] += self.current_question[3]
                     
                     self.reply(f"{self.winner} hat die Antwort", ircutils.mircColor(" " + self.current_question[2] + " ", 7, 1), "korrekt erraten, dafür gibt es", ircutils.mircColor(" " + str(self.current_question[3]) + " ", 4, 1), "Punkte!")
                 
@@ -254,7 +265,14 @@ class Quizbot(object):
                 self.current_question = None
                 self.current_category = ""
                 with open("stats.pickle", "wb") as fobj:
-                    pickle.dump(self.points, fobj)
+                    pickle.dump(dict(self.points), fobj)
+                
+                with open("daily.pickle", "wb") as fobj:
+                    pickle.dump(dict(self.daily), fobj)
+                
+                if date.today() - self.last:
+                    self.last = date.today()
+                    self.daily = collections.defaultdict(lambda: 0)
                 
                 self.reply(ircutils.mircColor("-------------", 7, 1))
                 #self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
@@ -294,18 +312,17 @@ def connected(par=None):
 
 @bot.on("addressed")
 def on_addressed(message, user, target, text):
-    if target != Quizbot.channel:
+    global quiz
+    if target != Quizbot.channel or not quiz:
         return
     
-    global quiz
-    
-    if text == "punkte" and quiz:
-        for i, p in enumerate(sorted(quiz.points.items(), key=lambda x: x[1], reverse=True), start=1):
+    if text in ["punkte", "tag"]:
+        for i, p in enumerate(sorted((quiz.daily if text == "tag" else quiz.points).items(), key=lambda x: x[1], reverse=True), start=1):
             quiz.reply(f"{i}.\t{p[0]} ({p[1]})")
-            if i > 5:
+            if i > 10:
                 break
     
-    elif text == "anzahl" and quiz:
+    elif text == "anzahl":
         i = 0
         for key in quiz.questions:
             i += len(quiz.questions[key])
