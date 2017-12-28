@@ -11,6 +11,10 @@ import sys
 import collections
 from datetime import date
 
+from PyQt5 import uic
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import *
+
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
 
 class ircutils(object):
@@ -114,7 +118,17 @@ class Quizbot(object):
         with open("questions.pickle", "rb") as fobj:
             self.questions = pickle.load(fobj)
             self.questions = {key : [[entry.strip() for entry in question if isinstance(entry, str)] for question in self.questions[key]] for key in self.questions}
-    
+            
+            for category in self.questions.copy():
+                if ":" in category:
+                    q = self.questions[category][0]
+                    del self.questions[category]
+                    category, question = category.split(":", 1)
+                    q[0] = f"{question}{q[0]}"
+                    if category in self.questions:
+                        self.questions[category].append(q)
+                    else:
+                        self.questions[category] = [q]
     def loadStats(self):
         self.points = collections.defaultdict(lambda: 0)
         self.daily = collections.defaultdict(lambda: 0)
@@ -384,4 +398,5 @@ def on_message(message, user, target, text):
 @bot.on("connection-lost")
 def on_disconnected(*args):
     sys.exit(0)
+
 asyncio.get_event_loop().run_forever()
