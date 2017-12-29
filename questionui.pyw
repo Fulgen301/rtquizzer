@@ -49,6 +49,7 @@ class QuestionUI(QMainWindow):
     
     def treeItemChanged(self, current : QTreeWidgetItem, previous : QTreeWidgetItem):
         [i.clear() for i in [self.lblCategory, self.txtQuestion, self.txtAnswer]]
+        self.treeQuestions.sortItems(0, 0)
         if not (current and current.parent()):
             [i.setEnabled(False) for i in [self.lblCategory, self.txtQuestion, self.txtAnswer, self.btnUpdate]]
             return
@@ -80,11 +81,18 @@ class QuestionUI(QMainWindow):
             return
         if current.parent():
             current = current.parent()
+            new = QTreeWidgetItem(current)
+            new.setText(0, "Neuer Eintrag")
+            setattr(new, "question", ["", "", "", 0])
+        else:
+            new = self.addCategory(current)
         
-        new = QTreeWidgetItem(current)
-        new.setText(0, "Neuer Eintrag")
-        setattr(new, "question", ["", "", "", 0])
         self.treeQuestions.setCurrentItem(new)
+    
+    def addCategory(self, current):
+        new = QTreeWidgetItem(self.treeQuestions)
+        new.setText(0, QInputDialog.getText(self, "Neuer Eintrag", "Name der Kategorie:")[0])
+        return new
     
     def showContextMenu(self, pos):
         item = self.treeQuestions.itemAt(pos)
