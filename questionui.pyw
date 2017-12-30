@@ -79,17 +79,16 @@ class QuestionUI(QMainWindow):
         current = self.treeQuestions.currentItem()
         if not current:
             return
-        if current.parent():
-            current = current.parent()
-            new = QTreeWidgetItem(current)
-            new.setText(0, "Neuer Eintrag")
-            setattr(new, "question", ["", "", "", 0])
+        if not current.parent():
+            current = self.addCategory()
         else:
-            new = self.addCategory(current)
-        
+            current = current.parent()
+        new = QTreeWidgetItem(current)
+        new.setText(0, "Neuer Eintrag")
+        setattr(new, "question", ["", "", "", 0])
         self.treeQuestions.setCurrentItem(new)
     
-    def addCategory(self, current):
+    def addCategory(self):
         new = QTreeWidgetItem(self.treeQuestions)
         new.setText(0, QInputDialog.getText(self, "Neuer Eintrag", "Name der Kategorie:")[0])
         return new
