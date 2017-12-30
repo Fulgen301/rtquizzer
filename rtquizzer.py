@@ -169,20 +169,8 @@ class Quizbot(object):
                     try:
                         self.current_category = random.choice(list(self.questions.keys()))
                         self.current_question = random.choice(self.questions[self.current_category])
-                        if self.current_category.count(":") > 1:
-                            parts = self.current_category.split(":", 1)
-                            try:
-                                self.questions[self.current_category].remove(self.current_question)
-                            except (KeyError, ValueError):
-                                pass
-                            
-                            self.current_category = parts[0]
-                            self.current_question[0] = f"{parts[1]}{self.current_question[0]}"
-                            
-                            if self.current_category in self.questions:
-                                self.questions[self.current_category] = [self.current_question]
-                            else:
-                                self.questions[self.current_category].append(self.current_question)
+                        if not self.current_question:
+                            continue
                         
                         if not (self.validQuestion(self.current_question[0]) and self.validQuestion(self.current_category)):
                             raise IndexError
@@ -190,13 +178,10 @@ class Quizbot(object):
                     
                     
                     except IndexError:
-                        text = [f"Kategorie {ircutils.bold(self.current_category)}: Frage '{self.current_question}' fehlerhaft."]
                         try:
                             self.questions[self.current_category].remove(self.current_question)
-                        except ValueError:
-                            text.append("Konnte Frage nicht aus der Datenbank tilgen.")
-                        except KeyError: # we change the question above
-                            pass
+                        except (ValueError, KeyError):
+                            continue
                         
                         try:
                             with open("questions.pickle", "wb") as fobj:
@@ -204,6 +189,8 @@ class Quizbot(object):
                         except Exception as e:
                             text.append(f"Konnte Datenbank nicht auf die Festplatte schreiben: {str(e)}. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
                             raise
+                    except Exception as e:
+                        continue
                 
                     self.reply(*text)
                     self.topic(*text)
