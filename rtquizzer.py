@@ -163,7 +163,7 @@ class Quizbot(object):
                 
                     self.reply(f"Kategorie {self.current_question[0]}: {self.current_question[1]}")
                     
-                    l = len(self.current_question[1])
+                    l = len(self.current_question[2])
                     self.current_question.append(l * 2 if l < 80 else l)
                     if not self.random(10):
                         self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4, 1))
