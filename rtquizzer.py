@@ -114,18 +114,7 @@ class Quizbot(object):
     def loadQuestions(self):
         with open("questions.pickle", "rb") as fobj:
             self.questions = pickle.load(fobj)
-            self.questions = {key : [[entry.strip() for entry in question if isinstance(entry, str)] for question in self.questions[key]] for key in self.questions}
-            
-            for category in self.questions.copy():
-                if ":" in category:
-                    q = self.questions[category][0]
-                    del self.questions[category]
-                    category, question = category.split(":", 1)
-                    q[0] = f"{question}{q[0]}"
-                    if category in self.questions:
-                        self.questions[category].append(q)
-                    else:
-                        self.questions[category] = [q]
+    
     def loadStats(self):
         self.points = collections.defaultdict(lambda: 0)
         self.daily = collections.defaultdict(lambda: 0)
@@ -164,44 +153,18 @@ class Quizbot(object):
                 self.winner = None
                 self.tips = 1
                 self.counter = 0
-                #text = [f"Kategorie {ircutils.bold(self.current_category)}: ", ircutils.mircColor(self.current_question[0], 11, 2)]
+                # [category, question, answer]
                 
                 try:
-                    try:
-                        self.current_category = random.choice(list(self.questions.keys()))
-                        self.current_question = random.choice(self.questions[self.current_category])
-                        if not self.current_question:
-                            continue
-                        
-                        if not (self.validQuestion(self.current_question[0]) and self.validQuestion(self.current_category)):
-                            raise IndexError
-                        text = [f"Kategorie {ircutils.bold(self.current_category)}: {self.current_question[0]}"]
-                    
-                    
-                    except IndexError:
-                        try:
-                            self.questions[self.current_category].remove(self.current_question)
-                        except (ValueError, KeyError):
-                            continue
-                        
-                        try:
-                            with open("questions.pickle", "wb") as fobj:
-                                pickle.dump(self.questions, fobj)
-                        except Exception as e:
-                            text.append(f"Konnte Datenbank nicht auf die Festplatte schreiben: {str(e)}. Dies ist ein schwerer Fehler, bitte sofort den Botinhaber kontaktieren!")
-                            raise
-                    except Exception as e:
+                    self.current_question = random.choice(self.questions)
+                    if not (self.current_question and len(self.current_question) >= 3 and self.validQuestion(self.current_question)):
+                        continue
                         continue
                 
-                    self.reply(*text)
-                    self.topic(*text)
-                    try:
-                        self.current_question[3] = len(self.current_question[2]) * 2
-                    except IndexError:
-                        while len(self.current_question) < 4:
-                            self.current_question.append("")
-                        self.current_question[3] = len(self.current_question[2]) * 2
-                
+                    self.reply(f"Kategorie {self.current_question[0]}: {self.current_question[1]}")
+                    
+                    l = len(self.current_question[1])
+                    self.current_question.append(l * 2 if l < 80 else l)
                     if not self.random(10):
                         self.reply(ircutils.mircColor("ACHTUNG: Dies ist eine Superpunkterunde. Der Gewinner bekommt die dreifache Punktezahl!", 4, 1))
                         self.current_question[3] *= 3
@@ -220,7 +183,6 @@ class Quizbot(object):
                     time.sleep(5)
                     continue
                 
-                #self.reply(ircutils.mircColor("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)), 0, 10))
                 self.reply("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)))
                 self.tips += 1
                 if self.tips >= len(self.current_question[2]):
@@ -254,10 +216,6 @@ class Quizbot(object):
                 
                 else:
                     self.reply(f"Keiner hat die Antwort", ircutils.mircColor(" " + self.current_question[2] + " ", 7, 1), "korrekt erraten :(")
-                
-                if self.current_question[1]:
-                    self.reply("Zusatzinfo:")
-                    self.reply(f"{self.current_question[1]}")
                 
                 self.mode = State.Question
                 self.current_question = None

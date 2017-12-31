@@ -2,6 +2,7 @@
 import sys
 import pickle
 import threading
+import collections
 from PyQt5 import uic
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon
@@ -22,28 +23,26 @@ class QuestionUI(QMainWindow):
         self.actSave.triggered.connect(self.save)
         
         with open("questions.pickle", "rb") as fobj:
-            self.questions = pickle.load(fobj)
+            questions = pickle.load(fobj)
         
-        for category in self.questions.copy():
-            if ":" in category:
-                q = self.questions[category][0]
-                del self.questions[category]
-                category, question = category.split(":", 1)
-                q[0] = f"{question}{q[0]}"
-                if category in self.questions:
-                    self.questions[category].append(q)
-                else:
-                    self.questions[category] = [q]
+        new = collections.defaultdict(lambda: list())
         
-        for category in self.questions:
+        for q in questions:
+            if ":" in q[0]:
+                q[0], que = q[0].split(":", 1)
+                q[1] = f"{que}{q[1]}"
+            
+            new[q[0].strip()].append(q[1:])
+        
+        for category in new:
             entry_cat = QTreeWidgetItem(self.treeQuestions)
             entry_cat.setText(0, category.strip())
-            for q in self.questions[category]:
+            for q in new[category]:
                 entry_q = QTreeWidgetItem(entry_cat)
                 entry_q.setText(0, q[0])
                 setattr(entry_q, "question", q)
         
-        del self.questions
+        del questions, new
         
         self.treeQuestions.sortItems(0, 0)
     
@@ -57,7 +56,7 @@ class QuestionUI(QMainWindow):
         [i.setEnabled(True) for i in [self.lblCategory, self.txtQuestion, self.txtAnswer, self.btnUpdate]]
         self.lblCategory.setText(current.parent().text(0))
         self.txtQuestion.setPlainText(current.question[0])
-        self.txtAnswer.setText(current.question[2])
+        self.txtAnswer.setText(current.question[1])
     
     def updateEntry(self):
         current = self.treeQuestions.currentItem()
@@ -66,7 +65,7 @@ class QuestionUI(QMainWindow):
         
         current.question[0] = self.txtQuestion.toPlainText()
         current.setText(0, self.txtQuestion.toPlainText())
-        current.question[2] = self.txtAnswer.text()
+        current.question[1] = self.txtAnswer.text()
     
     def deleteEntry(self):
         current = self.treeQuestions.currentItem()
@@ -111,13 +110,12 @@ class QuestionUI(QMainWindow):
         menu.exec(self.treeQuestions.mapToGlobal(pos))
     
     def save(self):
-        q = {}
+        q = []
         for i in range(self.treeQuestions.topLevelItemCount()):
             cat = self.treeQuestions.topLevelItem(i)
-            q[cat.text(0)] = []
             for j in range(cat.childCount()):
                 item = cat.child(j)
-                q[cat.text(0)].append([item.question[0], "", item.question[2], 0])
+                q.append([cat.text(0), *(item.question)])
         
         with open("questions.pickle", "wb") as fobj:
             pickle.dump(q, fobj)
