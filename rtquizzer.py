@@ -161,7 +161,7 @@ class Quizbot(object):
                         continue
                         continue
                 
-                    self.reply(f"Kategorie {self.current_question[0]}: {self.current_question[1]}")
+                    self.reply(f"Kategorie {ircutils.bold(self.current_question[0])}: {self.current_question[1]}")
                     
                     l = len(self.current_question[2])
                     self.current_question.append(l * 2 if l < 80 else l)
@@ -194,9 +194,9 @@ class Quizbot(object):
             
             elif self.mode == State.Pause:
                 if not self.counter:
-                    self.reply(ircutils.mircColor("Achtung, wenn die Frage innerhalb von 60 Sekunden nicht beantwortet wird, werde ich automatisch eine neue Runde starten!", 3, 1))
+                    self.reply(ircutils.mircColor("Achtung, wenn die Frage innerhalb von 30 Sekunden nicht beantwortet wird, werde ich automatisch eine neue Runde starten!", 3, 1))
                 
-                if self.counter < 12:
+                if self.counter < 6:
                     self.counter += 1
                     time.sleep(5)
                     continue
@@ -279,11 +279,7 @@ def on_addressed(message, user, target, text):
                 break
     
     elif text == "anzahl":
-        i = 0
-        for key in quiz.questions:
-            i += len(quiz.questions[key])
-        
-        quiz.reply(f"{i} Fragen")
+        quiz.reply(f"{len(quiz.questions)} Fragen")
 
 current_category = ""
 current_question = []
