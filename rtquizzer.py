@@ -7,6 +7,7 @@ import pickle
 import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
+random = random.SystemRandom()
 import sys
 import collections
 from datetime import date
