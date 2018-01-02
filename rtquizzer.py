@@ -280,6 +280,9 @@ def on_addressed(message, user, target, text):
     
     elif text == "anzahl":
         quiz.reply(f"{len(quiz.questions)} Fragen")
+    
+    elif text == "frage":
+        quiz.reply(f"Kategorie {ircutils.bold(quiz.current_question[0])}: {quiz.current_question[1]}")
 
 current_category = ""
 current_question = []
