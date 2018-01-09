@@ -209,8 +209,13 @@ class Quizbot(object):
                     x = re.match(r"(.*?).{1}onAir", self.winner, re.IGNORECASE)
                     if x:
                         self.winner = x[1]
-                    self.points[self.winner.lower()] += self.current_question[3]
-                    self.daily[self.winner.lower()] += self.current_question[3]
+                    
+                    if self.winner not in self.points:
+                        for k in self.points:
+                            if k.lower() == self.winner.lower():
+                                self.winner = k
+                    self.points[self.winner] += self.current_question[3]
+                    self.daily[self.winner] += self.current_question[3]
                     
                     self.reply(f"{self.winner} hat die Antwort", ircutils.mircColor(" " + self.current_question[2] + " ", 7, 1), "korrekt erraten, dafür gibt es", ircutils.mircColor(" " + str(self.current_question[3]) + " ", 4, 1), "Punkte!")
                 
