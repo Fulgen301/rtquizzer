@@ -10,6 +10,7 @@ import random
 random = random.SystemRandom()
 import sys
 import collections
+import requests
 from datetime import date
 
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
@@ -345,4 +346,23 @@ def on_message(message, user, target, text):
 def on_disconnected(*args):
     sys.exit(0)
 
+weather = irc.connect("irc.euirc.net", 6667, use_ssl=False)
+weather.register("RT-Weather", "RT-Weather", "RT-Weather").join(["#radio-thirty"])
+
+@weather.on("irc-001")
+def connected(par=None):
+    weather.writeln(f"MODE {weather.nick} +B")
+
+@weather.on("addressed")
+def on_addressed(message, user, target, text):
+    if text.startswith("wetter"):
+        cmd = text.split()
+        print(cmd)
+        if len(cmd) < 2:
+            return
+        
+        r = requests.get(f"http://de.wttr.in/{cmd[1]}?Q0T")
+        for line in r.text.splitlines():
+            weather.say(target, line)
+            
 asyncio.get_event_loop().run_forever()
