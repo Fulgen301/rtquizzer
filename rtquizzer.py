@@ -8,6 +8,7 @@ import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
 random = random.SystemRandom()
+import requests
 import sys
 import collections
 from datetime import date
