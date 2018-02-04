@@ -261,20 +261,29 @@ def git():
 
 asyncirc.plugins.addressed.register_command_character("!")
 bot = irc.connect("irc.euirc.net", 6667, use_ssl=False)
-bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer", password="quizzer").join([Quizbot.channel, "#atlantis"])
+bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer", password="quizzer").join([Quizbot.channel, "#radio-thirty", "#atlantis"])
 
 @bot.on("irc-001")
 def connected(par=None):
     global quiz
     quiz = Quizbot(bot)
     threading.Thread(target=git, args=(), daemon=True).start()
-    threading.Thread(target=os.system, args=(f"{sys.executable} weather.py",), daemon=True).start()
     bot.writeln(f"MODE {bot.nick} +B")
 
 
 @bot.on("addressed")
 def on_addressed(message, user, target, text):
     global quiz
+    
+    if target == "#radio-thirty" and text.startswith("wetter"):
+        cmd = text.split()
+        if len(cmd) < 2:
+            return
+        
+        r = requests.get(f"http://de.wttr.in/{cmd[1]}?Q0T")
+        for line in r.text.splitlines():
+            bot.say(target, line)
+    
     if target != Quizbot.channel or not quiz:
         return
     
