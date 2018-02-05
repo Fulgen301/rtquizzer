@@ -279,7 +279,7 @@ def on_addressed(message, user, target, text):
     def say(target, text):
         text = text.replace("\n", "").replace("\r", "")
         while text:
-            bot._writeln(f"PRIVMSG {target} :{message[:400]}")
+            bot._writeln(f"PRIVMSG {target} :{text[:400]}")
             text = text[400:]
     
     if target == "#radio-thirty" and text.startswith("wetter"):
