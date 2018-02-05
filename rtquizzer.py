@@ -276,14 +276,25 @@ def connected(par=None):
 def on_addressed(message, user, target, text):
     global quiz
     
+    def say(target, text):
+        text = text.replace("\n", "").replace("\r", "")
+        while text:
+            weather._writeln(f"PRIVMSG {target} :{message[:400]}")
+            text = text[400:]
+    
     if target == "#radio-thirty" and text.startswith("wetter"):
         cmd = text.split()
         if len(cmd) < 2:
             return
         
+        if cmd[1].lower() == "moon":
+            return
+        
         r = requests.get(f"http://de.wttr.in/{cmd[1]}?Q0T")
-        for line in r.text.splitlines():
-            bot.say(target, line)
+        for i, line in enumerate(r.text.splitlines()):
+            if i and i % 6 == 0:
+                sleep(2)
+            say(target, line)
     
     if target != Quizbot.channel or not quiz:
         return
