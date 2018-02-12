@@ -283,12 +283,21 @@ def on_addressed(message, user, target, text):
             text = text[400:]
     
     if target == "#radio-thirty" and text.startswith("wetter"):
+        regex_list = {
+            re.compile("f.rth") : "fürth"
+            }
         cmd = text.split()
         if len(cmd) < 2:
             return
         
-        if cmd[1].lower() == "moon":
+        cmd[1] = cmd[1].lower()
+        
+        if cmd[1] == "moon":
             return
+        
+        for i in regex_list:
+            if i.match(cmd[1]):
+                cmd[1] = regex_list[i]
         
         r = requests.get(f"http://de.wttr.in/{cmd[1]}?Q0T")
         for i, line in enumerate(r.text.splitlines()):
