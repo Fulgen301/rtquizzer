@@ -211,6 +211,13 @@ class Quizbot(object):
                     if x:
                         self.winner = x[1]
                     
+                    aliases = {
+                        "l-micha" : "lmichael"
+                            }
+                    
+                    if self.winner in aliases:
+                        self.winner = aliases[self.winner]
+                    
                     if self.winner not in self.points:
                         for k in self.points:
                             if k.lower() == self.winner.lower():
