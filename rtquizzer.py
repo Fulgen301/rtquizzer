@@ -92,6 +92,7 @@ class State(IntEnum):
 class Quizbot(object):
     quiz = None
     test = None
+    event = None
     questions = {}
     current_question = []
     current_category = ""
@@ -106,11 +107,16 @@ class Quizbot(object):
     
     def __init__(self, bot):
         self.bot = bot
+        self.event = threading.Event()
         self.loadStats()
         self.last = date.today()
         self.quiz = threading.Thread(daemon=True, target=self.quizzing, args=())
         self.quiz.start()
         self.test = threading.Thread(daemon=True, target=self.checkForQuiz, args=())
+    
+    def sleep(self, timeout : int):
+        self.event.wait(timeout)
+        self.event.clear()
     
     def loadQuestions(self):
         with open("questions.pickle", "rb") as fobj:
@@ -145,7 +151,7 @@ class Quizbot(object):
                 del self.quiz
                 self.quiz = threading.Thread(daemon=True, target=self.quizzing, args=())
                 self.quiz.start()
-            time.sleep(60)
+            self.sleep(60)
     
     def quizzing(self):
         while True:
@@ -175,13 +181,13 @@ class Quizbot(object):
                 except Exception as e: # general ignore
                     self.reply(f"Frage konnte nicht geladen werden: {str(e)}")
                 
-                time.sleep(4)
+                self.sleep(4)
                 continue
         
             elif self.mode == State.Tips:
                 if self.counter < 4:
                     self.counter += 1
-                    time.sleep(5)
+                    self.sleep(5)
                     continue
                 
                 self.reply("{}{}{}".format(ircutils.bold("Tipp: "), self.current_question[2][:self.tips], "." * (len(self.current_question[2]) - self.tips)))
@@ -190,7 +196,7 @@ class Quizbot(object):
                     self.counter = 0
                     self.mode = State.Pause
                 
-                time.sleep(4)
+                self.sleep(4)
                 continue
             
             elif self.mode == State.Pause:
@@ -199,7 +205,7 @@ class Quizbot(object):
                 
                 if self.counter < 6:
                     self.counter += 1
-                    time.sleep(5)
+                    self.sleep(5)
                     continue
                 else:
                     self.counter = 0
@@ -246,8 +252,8 @@ class Quizbot(object):
                 self.reply(ircutils.mircColor("-------------", 7, 1))
                 #self.reply(ircutils.mircColor("Nächste Frage in 20s!", 7, 1))
                 #self.reply(ircutils.mircColor("-------------", 7, 1))
-                #time.sleep(20)
-                time.sleep(5)
+                #self.sleep(20)
+                self.sleep(5)
     
     def validQuestion(self, q : str) -> bool:
         for i in ["Tipp", "Top 10", "admin@ryobots.de", "Zeit ist vorbei"]:
@@ -336,6 +342,7 @@ def on_message(message, user, target, text):
     if target == Quizbot.channel and quiz and quiz.current_question and not quiz.winner and text.lower() == quiz.current_question[2].lower():
         quiz.winner = user.nick
         quiz.mode = State.Answer
+        quiz.event.set()
     
     elif target == "#atlantis" :
         if user.nick != "Colin" or not quiz:
