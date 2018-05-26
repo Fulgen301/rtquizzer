@@ -218,7 +218,8 @@ class Quizbot(object):
                         self.winner = x[1]
                     
                     aliases = {
-                        "l-micha" : "lmichael"
+                        "l-micha" : "lmichael",
+                        "spunki" : "lmichael"
                             }
                     
                     if self.winner in aliases:
