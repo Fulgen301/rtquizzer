@@ -8,6 +8,7 @@ import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
 random = random.SystemRandom()
+import urllib.parse
 import requests
 import sys
 import collections
@@ -313,7 +314,7 @@ def on_addressed(message, user, target, text):
             if i.match(cmd[1]):
                 cmd[1] = regex_list[i]
         
-        r = requests.get(f"http://de.wttr.in/{cmd[1]}?Q0T")
+        r = requests.get(f"http://de.wttr.in/{urllib.parse.quote(cmd[1])}?Q0T")
         for i, line in enumerate(r.text.splitlines()):
             if i and i % 6 == 0:
                 sleep(2)
