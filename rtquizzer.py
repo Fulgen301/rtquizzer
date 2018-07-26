@@ -387,6 +387,9 @@ def on_message(message, user, target, text):
             
             current_question = []
             current_category = ""
+    
+    elif text.lower().contains("freenode staff member"):
+        bot._writeln(f"KICK {target} {user.nick} :You wrote a bad word")
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
