@@ -305,9 +305,9 @@ def on_addressed(message, user, target, text):
         if len(cmd) < 2:
             return
         
-        cmd[1] = cmd[1].lower()
+        cmd[1] = cmd[1].lower().split(".")[0]
         
-        if cmd[1] == "moon":
+        if cmd[1] == "moon" or cmd[1].startswith(":"):
             return
         
         for i in regex_list:
