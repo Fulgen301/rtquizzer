@@ -230,6 +230,12 @@ class Quizbot(object):
                         for k in self.points:
                             if k.lower() == self.winner.lower():
                                 self.winner = k
+                    
+                    try:
+                        self.current_question[3] = int(self.current_question[3])
+                    except ValueError:
+                        self.current_question[3] = len(self.current_question[2])
+                    
                     self.points[self.winner] += self.current_question[3]
                     self.daily[self.winner] += self.current_question[3]
                     
