@@ -283,7 +283,7 @@ def git():
 
 asyncirc.plugins.addressed.register_command_character("!")
 bot = irc.connect("irc.euirc.net", 6667, use_ssl=False)
-bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer", password="quizzer").join([Quizbot.channel, "#radio-thirty", "#atlantis"])
+bot.register("RT-Quizzer", "RT-Quizzer", "RT-Quizzer", password="quizzer").join([Quizbot.channel, "#radio-thirty"])
 
 @bot.on("irc-001")
 def connected(par=None):
@@ -351,51 +351,6 @@ def on_message(message, user, target, text):
         quiz.winner = user.nick
         quiz.mode = State.Answer
         quiz.event.set()
-    
-    elif target == "#atlantis" :
-        if user.nick != "Colin" or not quiz:
-            return
-    
-        global current_category, current_question, questions
-        
-        x = re.match(r"^(.*?): (.*\??)$", text) # regex by Chipakyu
-        if x and quiz:
-            current_question = [ircutils.stripColor(x[2]), "", "", 0]
-            if not quiz.validQuestion(current_question[0]):
-                current_question = []
-                return
-            
-            current_category = ircutils.stripColor(x[1])
-        
-        print(f"current_category: {current_category}, current_question: {current_question}")
-        if not (current_category and current_question):
-            return
-        
-        x = re.match(r"Tipp : .* : (\d*) Punkte", text)
-        if x:
-            current_question[3] = x[1] // 200
-        
-        x = re.match(r".*-> (.*) <-.*", text)
-        if x:
-            current_question[2] = ircutils.stripColor(x[1])
-            
-            with open("questions.pickle", "rb") as fobj:
-                old = pickle.load(fobj)
-            
-            questions.update(old)
-            if current_category not in questions:
-                questions[current_category] = [current_question[:]]
-            elif current_question not in questions[current_category]:
-                questions[current_category].append(current_question[:])
-            
-            with open("questions.pickle", "wb") as fobj:
-                pickle.dump(questions, fobj)
-            
-            current_question = []
-            current_category = ""
-    
-    elif "freenode staff member" in text.lower():
-        bot._writeln(f"KICK {target} {user.nick} :You wrote a bad word")
 
 @bot.on("connection-lost")
 def on_disconnected(*args):
