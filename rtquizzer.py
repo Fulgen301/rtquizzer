@@ -328,7 +328,7 @@ def on_addressed(message, user, target, text):
                 say(target, line)
         
         elif text.startswith("sendeplan"):
-            page = BeautifulSoup(requests.get("http://radio-thirty.de/sendeplan_xl").text)
+            page = BeautifulSoup(requests.get("http://radio-thirty.de/sendeplan_xl").text, "lxml")
             emissions = []
             started = False
             current_emission = {}
