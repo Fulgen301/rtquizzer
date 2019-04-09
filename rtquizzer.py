@@ -13,6 +13,7 @@ import requests
 import sys
 import collections
 from datetime import date
+from bs4 import BeautifulSoup
 
 #supybot.ircutils (https://github.com/ProgVal/limnoria/tree/master/src/ircutils.py)
 
@@ -292,7 +293,6 @@ def connected(par=None):
     threading.Thread(target=git, args=(), daemon=True).start()
     bot.writeln(f"MODE {bot.nick} +B")
 
-
 @bot.on("addressed")
 def on_addressed(message, user, target, text):
     global quiz
@@ -303,28 +303,64 @@ def on_addressed(message, user, target, text):
             bot._writeln(f"PRIVMSG {target} :{text[:400]}")
             text = text[400:]
     
-    if target == "#radio-thirty" and text.startswith("wetter"):
-        regex_list = {
-            re.compile("f.rth") : "fürth"
-            }
-        cmd = text.split()
-        if len(cmd) < 2:
-            return
+    if target == "#radio-thirty":
+        if text.startswith("wetter"):
+            regex_list = {
+                re.compile("f.rth") : "fürth"
+                }
+            cmd = text.split()
+            if len(cmd) < 2:
+                return
+            
+            cmd[1] = cmd[1].lower().split(".")[0]
+            
+            if cmd[1] == "moon" or cmd[1].startswith(":"):
+                return
+            
+            for i in regex_list:
+                if i.match(cmd[1]):
+                    cmd[1] = regex_list[i]
+            
+            r = requests.get(f"http://de.wttr.in/{urllib.parse.quote(cmd[1])}?Q0T")
+            for i, line in enumerate(r.text.splitlines()):
+                if i and i % 6 == 0:
+                    sleep(2)
+                say(target, line)
         
-        cmd[1] = cmd[1].lower().split(".")[0]
-        
-        if cmd[1] == "moon" or cmd[1].startswith(":"):
-            return
-        
-        for i in regex_list:
-            if i.match(cmd[1]):
-                cmd[1] = regex_list[i]
-        
-        r = requests.get(f"http://de.wttr.in/{urllib.parse.quote(cmd[1])}?Q0T")
-        for i, line in enumerate(r.text.splitlines()):
-            if i and i % 6 == 0:
-                sleep(2)
-            say(target, line)
+        elif text.startswith("sendeplan"):
+            page = BeautifulSoup(requests.get("http://radio-thirty.de/sendeplan_xl").text)
+            emissions = []
+            started = False
+            current_emission = {}
+            for tr in page.tr.td.table.find_all("tr", recursive=False):
+                try:
+                    emission = {
+                        "time" : tr.td.table.tr.td.next_sibling.next_sibling.text.replace("°", "").replace("U", " U"),
+                        "moderator" : tr.td.next_sibling.next_sibling.table.tr.td.next_sibling.next_sibling.text,
+                        "title" : tr.td.next_sibling.next_sibling.table.tr.td.next_sibling.next_sibling.next_sibling.next_sibling.text
+                        }
+                    if emission["moderator"] == "":
+                        started = False
+                        if current_emission != {}:
+                            emissions.append(current_emission.copy())
+                            current_emission = {}
+                    
+                    elif started:
+                        if current_emission["moderator"] != emission["moderator"]:
+                            emissions.append(current_emission.copy())
+                            current_emission = emission
+                        else:
+                            current_emission["time"] = current_emission["time"].split("-")[0] + "-" + emission["time"].split("-")[1]
+                            current_emission["title"] += emission["title"]
+                    
+                    else:
+                        started = True
+                        current_emission = emission
+                except Exception:
+                    continue
+            
+            for emission in emissions:
+                say(target, f"{emission['title']} mit {emission['moderator']} von {emission['time']}")
     
     if target != Quizbot.channel or not quiz:
         return
