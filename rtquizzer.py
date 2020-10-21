@@ -3,7 +3,7 @@ import asyncio
 import re
 from asyncirc import irc
 from enum import IntEnum
-import pickle
+import json
 import asyncirc.plugins.addressed
 import threading, time, os, re
 import random
@@ -121,19 +121,19 @@ class Quizbot(object):
         self.event.clear()
     
     def loadQuestions(self):
-        with open("questions.pickle", "rb") as fobj:
-            self.questions = pickle.load(fobj)
+        with open("questions.json", "r") as fobj:
+            self.questions = json.load(fobj)
     
     def loadStats(self):
         self.points = collections.defaultdict(lambda: 0)
         self.daily = collections.defaultdict(lambda: 0)
-        if os.path.isfile("stats.pickle"):
-            with open("stats.pickle", "rb") as fobj:
-                self.points.update(pickle.load(fobj))
+        if os.path.isfile("stats.json"):
+            with open("stats.json", "r") as fobj:
+                self.points.update(json.load(fobj))
         
-        if os.path.isfile("daily.pickle"):
-            with open("daily.pickle", "rb") as fobj:
-                self.daily.update(pickle.load(fobj))
+        if os.path.isfile("daily.json"):
+            with open("daily.json", "r") as fobj:
+                self.daily.update(json.load(fobj))
     
     def reply(self, *args):
         msg = "".join(ircutils.mircColor(i, 2, 0) for i in args)
@@ -248,11 +248,11 @@ class Quizbot(object):
                 self.mode = State.Question
                 self.current_question = None
                 self.current_category = ""
-                with open("stats.pickle", "wb") as fobj:
-                    pickle.dump(dict(self.points), fobj)
+                with open("stats.json", "w") as fobj:
+                    json.dump(dict(self.points), fobj)
                 
-                with open("daily.pickle", "wb") as fobj:
-                    pickle.dump(dict(self.daily), fobj)
+                with open("daily.json", "w") as fobj:
+                    json.dump(dict(self.daily), fobj)
                 
                 if date.today() - self.last:
                     self.last = date.today()
