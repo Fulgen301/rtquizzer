@@ -304,6 +304,9 @@ def on_addressed(message, user, target, text):
             text = text[400:]
     
     if target == "#radio-thirty":
+        if text.startswith("wedda"):
+            text = "wetter chieming"
+        
         if text.startswith("wetter"):
             regex_list = {
                 re.compile("f.rth") : "fürth"
