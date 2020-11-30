@@ -304,13 +304,16 @@ def on_addressed(message, user, target, text):
             text = text[400:]
     
     if target == "#radio-thirty":
-        if text.startswith("wedda"):
-            text = "wetter chieming"
+        aliases = {
+            re.compile("^wedda") : "wetter chieming",
+            re.compile("^weer") : "wetter 26197",
+            re.compile("^wetter f.rth") : "wetter fürth"
+            }
+        
+        for regex, location in aliases.items():
+            text = regex.sub(location, text)
         
         if text.startswith("wetter"):
-            regex_list = {
-                re.compile("f.rth") : "fürth"
-                }
             cmd = text.split()
             if len(cmd) < 2:
                 return
@@ -319,10 +322,6 @@ def on_addressed(message, user, target, text):
             
             if cmd[1] == "moon" or cmd[1].startswith(":"):
                 return
-            
-            for i in regex_list:
-                if i.match(cmd[1]):
-                    cmd[1] = regex_list[i]
             
             r = requests.get(f"http://de.wttr.in/{urllib.parse.quote(cmd[1])}?Q0T")
             for i, line in enumerate(r.text.splitlines()):
